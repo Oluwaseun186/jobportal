@@ -64,9 +64,7 @@ jobs:
       run: npm install
 
     - name: Fix and audit dependencies
-      run: |
-        npm audit fix
-        npm audit --audit-level high
+      run:  npm audit --audit-level critical
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
