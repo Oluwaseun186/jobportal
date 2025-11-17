@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -11,11 +11,8 @@ function Jobs() {
     location: ''
   });
 
-  useEffect(() => {
-    fetchJobs();
-  }, [filters]);
-
-  const fetchJobs = async () => {
+  // Wrap fetchJobs in useCallback to make it stable
+  const fetchJobs = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
@@ -27,14 +24,17 @@ function Jobs() {
     } catch (error) {
       console.error('Error fetching jobs:', error);
     }
-  };
+  }, [filters]); // Add filters as dependency
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]); // Now fetchJobs is stable
 
   const handleApply = async (jobId) => {
     try {
       await axios.post(`http://localhost:5000/api/jobs/${jobId}/apply`);
       alert('Application submitted successfully!');
     } catch (error) {
-      // Fixed: Remove optional chaining
       const errorMessage = error.response && error.response.data && error.response.data.message 
         ? error.response.data.message 
         : 'Failed to apply';

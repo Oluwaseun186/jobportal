@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -9,18 +9,19 @@ function CommentsSection({ jobId }) {
   const [replyContent, setReplyContent] = useState('');
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchComments();
-  }, [jobId]);
-
-  const fetchComments = async () => {
+  // Wrap fetchComments in useCallback to make it stable
+  const fetchComments = useCallback(async () => {
     try {
       const response = await axios.get(`http://localhost:5000/api/comments/job/${jobId}`);
       setComments(response.data);
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
-  };
+  }, [jobId]); // Add jobId as dependency
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]); // Now fetchComments is stable
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
@@ -85,7 +86,6 @@ function CommentsSection({ jobId }) {
         <p>{comment.content}</p>
         <div className="comment-actions">
           <button onClick={() => handleLike(comment._id)}>
-            {/* Fixed: Remove optional chaining */}
             Like ({(comment.likes && comment.likes.length) || 0})
           </button>
           {user && (
