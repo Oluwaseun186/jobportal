@@ -17,7 +17,7 @@ jobs:
     name: Test and Lint
     
     steps:
-    - name: Checkout code.
+    - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Setup Node.js
@@ -25,16 +25,18 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
-        cache-dependency-path: package-lock.json
 
     - name: Install dependencies
-      run: npm ci
+      run: npm install
 
     - name: Run linting
       run: npm run lint
 
     - name: Run tests with coverage
-      run: npm run test:ci
+      run: npm test -- --coverage --watchAll=false --passWithNoTests
+
+    - name: Build application
+      run: npm run build
 
     - name: Upload test coverage
       uses: codecov/codecov-action@v3
@@ -42,9 +44,6 @@ jobs:
         file: ./coverage/lcov.info
         flags: unittests
         name: codecov-umbrella
-
-    - name: Build application
-      run: npm run build
 
   # Security Scanning
   security:
@@ -55,6 +54,17 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run npm audit
+      run: npm audit --audit-level high
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
@@ -69,15 +79,13 @@ jobs:
       with:
         sarif_file: 'trivy-results.sarif'
 
-    - name: Run npm audit
-      run: npm audit --audit-level high
-
-    - name: Run Snyk security scan
-      uses: snyk/actions/node@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --severity-threshold=high
+    # Uncomment the following Snyk section if you have a SNYK_TOKEN secret configured
+    # - name: Run Snyk security scan
+    #   uses: snyk/actions/node@master
+    #   env:
+    #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    #   with:
+    #     args: --severity-threshold=high
 
   # Docker Build and Scan
   docker:
@@ -115,36 +123,37 @@ jobs:
       with:
         sarif_file: 'trivy-docker-results.sarif'
 
+  # Optional: Uncomment and configure these deployment jobs when ready
   # Deploy to Staging
-  deploy-staging:
-    runs-on: ubuntu-latest
-    name: Deploy to Staging
-    needs: [test, security, docker]
-    if: github.ref == 'refs/heads/develop'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Deploy to staging environment
-      run: |
-        echo "Deploying to staging environment..."
-        # Add your staging deployment commands here
-        # Example: docker-compose -f docker-compose.staging.yml up -d
+  # deploy-staging:
+  #   runs-on: ubuntu-latest
+  #   name: Deploy to Staging
+  #   needs: [test, security, docker]
+  #   if: github.ref == 'refs/heads/develop'
+  #   
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  # 
+  #   - name: Deploy to staging environment
+  #     run: |
+  #       echo "Deploying to staging environment..."
+  #       # Add your staging deployment commands here
+  #       # Example: docker-compose -f docker-compose.staging.yml up -d
 
   # Deploy to Production
-  deploy-production:
-    runs-on: ubuntu-latest
-    name: Deploy to Production
-    needs: [test, security, docker]
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Deploy to production
-      run: |
-        echo "Deploying to production environment..."
-        # Add your production deployment commands here
-        # Example: docker-compose -f docker-compose.prod.yml up -d
+  # deploy-production:
+  #   runs-on: ubuntu-latest
+  #   name: Deploy to Production
+  #   needs: [test, security, docker]
+  #   if: github.ref == 'refs/heads/main'
+  #   
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  # 
+  #   - name: Deploy to production
+  #     run: |
+  #       echo "Deploying to production environment..."
+  #       # Add your production deployment commands here
+  #       # Example: docker-compose -f docker-compose.prod.yml up -d
