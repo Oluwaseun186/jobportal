@@ -63,8 +63,10 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Run npm audit
-      run: npm audit --audit-level high
+    - name: Fix and audit dependencies
+      run: |
+        npm audit fix
+        npm audit --audit-level high
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
@@ -122,7 +124,6 @@ jobs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-docker-results.sarif'
-
   # Optional: Uncomment and configure these deployment jobs when ready
   # Deploy to Staging
   # deploy-staging:
