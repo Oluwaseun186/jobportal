@@ -14,7 +14,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="nav-content">
-        <Link to="/" className="logo">JobPortal</Link>
+        <Link to="/" className="logo">Job Router</Link>
         <div className="nav-links">
           <Link to="/" className="nav-link">Home</Link>
           <Link to="/jobs" className="nav-link">Jobs</Link>
