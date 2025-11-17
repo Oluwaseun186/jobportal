@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,11 +10,8 @@ function JobDetail() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchJob();
-  }, [id]);
-
-  const fetchJob = async () => {
+  // Wrap fetchJob in useCallback to make it stable
+  const fetchJob = useCallback(async () => {
     try {
       const response = await axios.get(`http://localhost:5000/api/jobs/${id}`);
       setJob(response.data);
@@ -23,7 +20,11 @@ function JobDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]); // Add id as dependency
+
+  useEffect(() => {
+    fetchJob();
+  }, [fetchJob]); // Now fetchJob is stable
 
   const handleApply = async () => {
     try {
@@ -31,13 +32,10 @@ function JobDetail() {
       alert('Application submitted successfully!');
       fetchJob(); // Refresh job data
     } catch (error) {
-      // In the JobDetail.js file, update this line (around line 34):
-      const hasApplied = job.applications && job.applications.some(app => app.user && app.user._id === (user && user._id));
       const errorMessage = error.response && error.response.data && error.response.data.message 
         ? error.response.data.message 
         : 'Failed to apply';
       alert(errorMessage);
-      alert(hasApplied ? 'You have already applied for this job' : errorMessage);
     }
   };
 
