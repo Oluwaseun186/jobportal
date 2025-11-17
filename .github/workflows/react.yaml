@@ -2,9 +2,9 @@ name: React CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ origin ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ origin ]
 
 env:
   NODE_VERSION: '18.x'
