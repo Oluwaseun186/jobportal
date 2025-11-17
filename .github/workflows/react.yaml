@@ -51,7 +51,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Security Scan
     needs: test
-    
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -101,8 +105,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Docker Build & Scan
     needs: [test, security]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-    
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/origin' || github.ref == 'refs/heads/develop')
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
