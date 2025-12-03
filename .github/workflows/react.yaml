@@ -145,18 +145,19 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Scan image with Trivy
-      run: |
-        trivy image \
-          --format sarif \
-          --output trivy-docker-results.sarif \
-          jobportal-frontend:latest || true
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
 
-    - name: Upload SARIF report to GitHub
-      if: exists('trivy-docker-results.sarif')
+    - name: Upload Trivy scan results
       uses: github/codeql-action/upload-sarif@v3
       with:
-       sarif_file: trivy-docker-results.sarif
+        sarif_file: 'trivy-results.sarif'
+        
 
   # Optional: Uncomment and configure these deployment jobs when ready
   # Deploy to Staging
