@@ -1,23 +1,20 @@
-# Use Node.js LTS as base image
-FROM node:18-alpine
+# Build Stage
+FROM node:18-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
 
-# Install dependencies
 RUN npm install
 
-# Copy all frontend source files
 COPY . .
 
-# Build the app
 RUN npm run build
 
-# Expose port
-EXPOSE 3000
+# Production Stage
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Start the app
-CMD ["npm", "start"]
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
