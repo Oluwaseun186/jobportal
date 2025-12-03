@@ -19,35 +19,20 @@ EXPOSE 3000
 # Start development server
 CMD ["npm", "start"]
 
-# Production build stage
-FROM node:18-alpine as build
+FROM node:18-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --only=production
+
+RUN npm install
 
 COPY . .
 RUN npm run build
 
-# Production stage with nginx
-FROM nginx:alpine as production
+# Install serve to serve static files
+RUN npm install -g serve
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+EXPOSE 3000
 
-# Copy built app to nginx
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Expose port
-EXPOSE 80
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:80/ || exit 1
-
-# Start nginx
-CMD ["npm start"]
+CMD ["serve", "-s", "build", "-l", "3000"]
